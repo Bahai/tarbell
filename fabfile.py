@@ -9,7 +9,8 @@ from apiclient import errors
 from apiclient import discovery
 from apiclient.http import MediaFileUpload as _MediaFileUpload
 from oauth2client import client
-from oauth2client import keyring_storage
+# from oauth2client import keyring_storage
+from oauth2client.file import Storage
 from oauth2client import tools
 import getpass
 import gflags
@@ -200,7 +201,6 @@ def _handle_oauth_flow(storage):
         flow = client.flow_from_clientsecrets(os.path.join(fab.env.template_dir, 'client_secrets.json'),
                                               scope=fab.env.oauth_scope)
         credentials = tools.run(flow, storage)
-        storage.put(credentials)
     http = httplib2.Http()
     http = credentials.authorize(http)
     return http
@@ -231,7 +231,7 @@ def _create_google_spreadsheet(project_name, email):
     named for this project, makes it world-readable and
     returns the file ID.
     """
-    storage = keyring_storage.Storage('fab', getpass.getuser())
+    storage = Storage('fab.dat')
     http = _handle_oauth_flow(storage)
     service = discovery.build('drive', 'v2', http=http)
     media_body = _MediaFileUpload(os.path.join(fab.env.template_dir, '_project_template/tarbell_template.xlsx'),
